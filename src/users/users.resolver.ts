@@ -31,11 +31,10 @@ export class UserResolver {
       return followers;
   }
 
-  /* @ResolveField('following', () => [User])
-  async following(@Parent() user: User): Promise<User[]> {
-      const { id } = user;
-      return this.usersService.getFollowing({ userId: id})
-  } */
+  @Query(() => [User])
+  async following(@Args('id') id: number): Promise<User[]> {
+      return await this.userService.getFollowing(id)
+  } 
 
 }
 

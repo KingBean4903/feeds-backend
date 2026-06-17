@@ -55,6 +55,19 @@ export class UserService {
           user_id: 2002,
           follower_id: 3002
         },
+  ]
+
+  following = [
+      {
+        id :"fllw_id_344",
+        followerId: 1001,
+        followingId: 2002
+      },
+      {
+        id :"fllw_id_899",
+        followerId: 2002,
+        followingId: 3002
+      }
 
   ]
 
@@ -80,16 +93,16 @@ export class UserService {
 
   }
 
+  async getFollowing(id: number): Promise<User[]>{
 
-  /* async profile(id: string): Promise<User> {
+      const fUsers: User[]= this.following
+                  .filter((one) => one.followerId === id)
+                  .map(one => 
+                       this.users.find((user) => 
+                          user.id == one.followingId ))
+                  .filter(user => user != undefined)
 
+      return fUsers;
   }
 
-  async followers(id: string): Promise<User> {
-
-  }
-
-  async following(id: string): Promise<User> {
-
-  } */
 }
