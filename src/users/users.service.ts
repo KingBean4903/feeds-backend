@@ -32,10 +32,52 @@ export class UserService {
           followersCount: 2,
           createdAt: new Date()
       },
+  ];
+
+  followers = [
+        {
+          id: 4568,
+          user_id: 1001,
+          follower_id: 2002
+        },
+        {
+          id: 6568,
+          user_id: 1001,
+          follower_id: 3002
+        },
+        {
+          id: 2368,
+          user_id: 2002,
+          follower_id: 1001
+        },
+        {
+          id: 1568,
+          user_id: 2002,
+          follower_id: 3002
+        },
+
   ]
+
+
 
   async findOneById(id: number): Promise<User  | undefined> {
       return this.users.find((one) => one.id === id)
+  }
+
+  async getFollowers(id: number): Promise<User[]>{
+
+      const fUsers: User[]= this.followers
+                  .filter((one) => one.user_id === id)
+                  .map(one => 
+                       this.users.find((user) => 
+                          user.id == one.follower_id ))
+                  .filter(user => user != undefined)
+
+
+
+      return fUsers;
+
+
   }
 
 

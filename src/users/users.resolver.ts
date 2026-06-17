@@ -21,13 +21,17 @@ export class UserResolver {
     return user;
   }
 
-  /* @ResolveField('followers', () => [User])
-  async followers(@Parent() user: User): Promise<User[]> {
-      const { id } = user;
-      return this.userService.getFollowers({ userId: id})
+  @Query(() => [User])
+  async followers(@Args('id') id: number): Promise<User[]> {
+      const followers = await this.userService.getFollowers(id)
+      if (!followers) {
+          throw new NotFoundException(id)
+      }
+
+      return followers;
   }
 
-  @ResolveField('following', () => [User])
+  /* @ResolveField('following', () => [User])
   async following(@Parent() user: User): Promise<User[]> {
       const { id } = user;
       return this.usersService.getFollowing({ userId: id})

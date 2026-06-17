@@ -21,4 +21,5 @@ scalar DateTime
 
 type Query {
   profile(id: Float!): User!
+  followers(id: Float!): [User!]!
 }
