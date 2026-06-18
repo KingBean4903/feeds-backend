@@ -24,3 +24,11 @@ type Query {
   followers(id: Float!): [User!]!
   following(id: Float!): [User!]!
 }
+
+type Mutation {
+  followUser(userId: FollowUserInput!): User!
+}
+
+input FollowUserInput {
+  userId: Float!
+}

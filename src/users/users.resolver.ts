@@ -1,8 +1,10 @@
 import { NotFoundException } from '@nestjs/common';
-import { Args, Query, Resolver, Parent,
+import { Args, Query, Resolver, Parent,Mutation ,
   ResolveField } from '@nestjs/graphql';
 import { User } from '../models/user.model';
 import { UserService } from './users.service';
+import { FollowUserInput } from '../dtos/follow.user.input'
+
 
 @Resolver(of => User)
 export class UserResolver {
@@ -35,6 +37,19 @@ export class UserResolver {
   async following(@Args('id') id: number): Promise<User[]> {
       return await this.userService.getFollowing(id)
   } 
+
+  @Mutation(() => User)
+  async followUser(@Args('userId') userId: FollowUserInput): Promise<User> {
+      
+      const user = await this.userService.followUser(userId);
+
+      if (!user) {
+          throw new Error(`User undefined`)
+      }
+
+      return user;
+
+  }
 
 }
 

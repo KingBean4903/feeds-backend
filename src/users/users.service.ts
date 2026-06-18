@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../models/user.model'
+import { FollowUserInput } from '../dtos/follow.user.input'
 
 @Injectable()
 export class UserService {
@@ -98,4 +99,17 @@ export class UserService {
       return fUsers;
   }
 
+  async followUser(input: FollowUserInput) {
+
+      const { userId } = input;
+      
+        this.following.push({
+          id :"fllw_id_809",
+          followerId: userId,
+          followingId: 3002 
+        })
+
+      return this.users.find((one) => one.id === userId)
+
+  }
 }
