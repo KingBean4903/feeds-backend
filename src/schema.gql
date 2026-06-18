@@ -27,6 +27,7 @@ type Query {
 
 type Mutation {
   followUser(userId: FollowUserInput!): User!
+  unfollow(userId: FollowUserInput!): User!
 }
 
 input FollowUserInput {

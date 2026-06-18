@@ -48,8 +48,20 @@ export class UserResolver {
       }
 
       return user;
-
   }
+
+  @Mutation(() => User)
+  async unfollow(@Args('userId') userId: FollowUserInput): Promise<User> {
+      
+      const user = await this.userService.unFollowUser(userId);
+
+      if (!user) {
+          throw new Error(`User undefined`)
+      }
+
+      return user;
+  }
+
 
 }
 

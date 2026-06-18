@@ -112,4 +112,14 @@ export class UserService {
       return this.users.find((one) => one.id === userId)
 
   }
+
+  async unFollowUser(input: FollowUserInput) {
+
+      const { userId } = input;
+
+      this.following.filter((user) => userId !== 2002)
+      
+      return this.users.find((one) => one.id === userId)
+
+  }
 }
