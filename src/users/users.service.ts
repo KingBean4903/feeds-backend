@@ -69,7 +69,6 @@ export class UserService {
         followerId: 2002,
         followingId: 3002
       }
-
   ];
 
   async findOneById(id: number): Promise<User  | undefined> {
