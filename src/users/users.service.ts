@@ -69,9 +69,7 @@ export class UserService {
         followingId: 3002
       }
 
-  ]
-
-
+  ];
 
   async findOneById(id: number): Promise<User  | undefined> {
       return this.users.find((one) => one.id === id)
@@ -85,12 +83,7 @@ export class UserService {
                        this.users.find((user) => 
                           user.id == one.follower_id ))
                   .filter(user => user != undefined)
-
-
-
       return fUsers;
-
-
   }
 
   async getFollowing(id: number): Promise<User[]>{
