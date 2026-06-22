@@ -1,0 +1,143 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PostType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+}
+
+enum PostVisibility {
+  PUBLIC
+  FOLLOWERS
+}
+
+enum MediaType {
+  IMAGE
+  AUDIO
+  VIDEO
+}
+
+enum MediaStatus {
+  UPLOADING
+  PROCESSING
+  READY
+  FAILED
+}
+
+model Post {
+  id String @id @default(uuid())
+  authorId String
+
+  text String?
+
+  type PostType
+  visibility PostVisibility
+
+  media PostMedia[]
+
+  stats PostStats?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@index([authorId, createdAt(sort: Desc)])
+  @@map("posts")
+
+}
+
+model PostStats {
+
+  postId String @id
+
+  likesCount Int @default(0)
+
+  commentsCount Int @default(0)
+  repostsCount Int  @default(0)
+
+  viewsCount Int @default(0)
+
+  updatedAt DateTime @updatedAt
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_stats")
+
+}
+
+model PostMedia {
+    postId String
+    mediaId String
+
+    order Int
+
+    post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+    media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+
+    @@id([postId, mediaId])
+
+    @@index([mediaId])
+
+    @@map("post_media")
+}
+
+model Media {
+  
+  id String @id @default(uuid())
+
+  ownerId String
+
+  type MediaType
+
+  storageKey String @unique
+
+  mimeType String
+
+  sizeBytes BigInt
+
+  status MediaStatus
+
+  durationSeconds Int?
+
+  thumbnailUrl String?
+
+  createdAt DateTime @default(now())
+
+  posts PostMedia[]
+
+  @@index([ownerId])
+  @@map("media")
+
+}
+
+model User {
+  id String @id @default(uuid())
+
+  displayName String
+  username String @unique
+
+  bio  String?
+  avatarUrl String?
+
+  followersCount Int @default(0)
+  followingCount Int @default(0)
+  postsCount  Int @default(0)
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

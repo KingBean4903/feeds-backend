@@ -1,9 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { User } from '../models/user.model'
 import { FollowUserInput } from '../dtos/follow.user.input'
+import { PrismaService } from '../prisma/prisma.service';  
 
 @Injectable()
 export class UserService {
+
+
+  @Inject()
+   private readonly prisma: PrismaService 
+
+  constructor() {
+  }
 
   users: User[] = [
       {
@@ -26,7 +34,7 @@ export class UserService {
       },
       {
           id: 3002,
-          username: 'Thiery',
+      username: 'Thiery',
           displayName: 'titi',
           isFollowing: true,
           followingCount: 2,
@@ -119,6 +127,19 @@ export class UserService {
       this.following.filter((user) => userId !== 2002)
       
       return this.users.find((one) => one.id === userId)
+
+  }
+
+  async findMany(postIds: string[]) {
+        const users = await this.prisma.user.findMany({
+            where: { 
+                id: {
+                  in: postIds
+                }
+            }
+        })
+    
+        return users;
 
   }
 }
