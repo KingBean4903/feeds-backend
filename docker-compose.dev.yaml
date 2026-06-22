@@ -1,0 +1,90 @@
+services:
+  postgres:
+    image: postgres:17-bookworm
+    restart: always
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 2s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    command: postgres -c listen_addresses='*'
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
+    
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    command: ["redis-server", "--aclfile", "/usr/local/etc/redis/users.acl"]
+    volumes:
+      - ./users.acl:/usr/local/etc/redis/users.acl
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"
+    restart: unless-stopped
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT 
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+    depends_on:
+      - zookeeper
+    volumes:
+      - kafka_data_zk:/var/lib/kafka/zk/data
+
+#  sql-runner:
+#    image: postgres:17-bookworm
+#    depends_on:
+#      - postgres
+#    volumes:
+#      - ./sql:/sql
+#    command: >
+#      sh -c "
+#      set -e &&
+#      sleep 10 &&
+#      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/init/001-system-accounts.sql && 
+#      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/init/003-users.sql &&
+#      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/init/002-wallets.sql &&
+#      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/init/004-constraints.sql 
+#     "
+
+volumes:
+  postgres_data:
+  redis_data:
+  kafka_data_zk:
+
