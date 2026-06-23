@@ -9,6 +9,7 @@ type ZSETRes = {
 export class RedisService {
   
   private client: RedisType;
+  private pipeline: unknown;
 
   constructor() {
       this.client = new Redis({
@@ -17,6 +18,8 @@ export class RedisService {
         password: process.env.REDIS_PASSWORD as string,
         username: process.env.REDIS_USER as string
       })
+
+      this.pipeline = this.client.pipeline()
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -36,6 +39,10 @@ export class RedisService {
   async zAdd(key: string, postId: string, score:number) {
 
       await this.client.zadd(key, score, postId);
+  }
+
+  async pipelineFn() {
+
   }
 
   async zRevRangeWithScores(key: string, 
