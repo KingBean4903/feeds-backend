@@ -47,3 +47,8 @@ export type User = Prisma.UserModel
  * 
  */
 export type Follow = Prisma.FollowModel
+/**
+ * Model Outbox
+ * 
+ */
+export type Outbox = Prisma.OutboxModel

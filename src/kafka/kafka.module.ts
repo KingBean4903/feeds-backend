@@ -1,8 +1,13 @@
-import { Module,DynamicModule } from '@nestjs/common';
+import { Module,DynamicModule, Global } from '@nestjs/common';
 import { KafkaProducerService } from './kafka.producer.service';
 import { KAFKA_OPTIONS } from './constants';
 import { PrismaService } from '../prisma/prisma.service';
 import { KafkaConsumer } from './kafka.consumer';
+import { KafkaPollingWorker  } from './kafka.polling.worker'
+import { EventsConsumerHost } from './fanout.worker'
+import { UserService } from '../users/users.service'
+import { RedisService } from '../redis/redis.service';
+
 
 interface KafkaRetry {
     retries: number;
@@ -19,6 +24,7 @@ export interface KafkaInitOptions {
   retry: KafkaRetry
 }
 
+@Global()
 @Module({
 })
 export class KafkaModule {
@@ -32,9 +38,12 @@ export class KafkaModule {
               useValue: options,
             },
             KafkaProducerService,
+            EventsConsumerHost,
+            KafkaPollingWorker,
             KafkaConsumer,
+            UserService, RedisService
                      ],
-          exports: [KafkaProducerService]
+          exports: [KafkaProducerService, KafkaPollingWorker]
       }
   }
 }

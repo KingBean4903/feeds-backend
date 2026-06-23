@@ -83,15 +83,35 @@ export class UserService {
       return this.users.find((one) => one.id === id)
   }
 
-  async getFollowers(id: number): Promise<User[]>{
+  async getFollowers(id: string ): Promise<(string | undefined)[]> {
 
-      const fUsers: User[]= this.followers
-                  .filter((one) => one.user_id === id)
-                  .map(one => 
-                       this.users.find((user) => 
-                          user.id == one.follower_id ))
-                  .filter(user => user != undefined)
-      return fUsers;
+    console.log(`Fetching followrs: ${id}`)
+      
+    const users = await this.prisma.$transaction(async (tx) => {
+
+          const result = await this.prisma.follow.findMany({
+              where: { followingId: id }
+          })
+
+          const followersId = result.map((one) => one.followerId);
+
+          console.log(`Followers list: ${JSON.stringify(followersId)}`)
+
+         
+          return followersId;
+
+    });
+
+    if (!users) {
+        throw new Error(`Error fetching followers`)
+    }
+
+    return users
+  }
+
+  async getFollowersById(id: number) {
+    
+    return this.users;
   }
 
   async getFollowing(id: number): Promise<User[]>{

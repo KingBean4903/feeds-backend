@@ -9,6 +9,17 @@
 * 🟢 You can import this file directly.
 */
 
+export const OutboxStatus = {
+  pending: 'pending',
+  published: 'published',
+  failed: 'failed',
+  processing: 'processing',
+  completed: 'completed'
+} as const
+
+export type OutboxStatus = (typeof OutboxStatus)[keyof typeof OutboxStatus]
+
+
 export const PostType = {
   TEXT: 'TEXT',
   IMAGE: 'IMAGE',

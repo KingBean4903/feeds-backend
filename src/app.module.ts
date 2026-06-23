@@ -16,6 +16,7 @@ import {  DataLoaderService } from './dataloader/data.loader';
 import { UserService } from './users/users.service'
 import { PostsModule } from './posts/posts.module';
 import { ConfigModule } from '@nestjs/config'
+import { KafkaModule } from './kafka/kafka.module'
 
 @Module({
   imports: [
@@ -35,6 +36,19 @@ import { ConfigModule } from '@nestjs/config'
         }),
         RedisModule,
         UserModule,
+        KafkaModule,
+        KafkaModule.register({
+        topic: 'post.created',
+        clientId: 'post.processor',
+        brokers:  ['localhost:9092'],
+        retry: {
+            retries: 3,
+            factor: 2,
+            initialRetryTime: 500,
+            maxRetryTime: 30000,
+            multiplier: 2
+        }
+    }),
         PostsModule,
 
   ],

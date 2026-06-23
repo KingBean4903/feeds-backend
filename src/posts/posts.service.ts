@@ -13,18 +13,41 @@ export class PostsService {
   async createPost(payload: Payload) {
 
     try {
-     const post = await this.prisma.post.create({
-        data: { 
-          text: payload.text,
-          authorId: payload.authorId,
-          type: payload.type,
-          visibility: payload.visibility
-        }
-      })
+     const post = await this.prisma.$transaction( async (tx) => { 
+
+       const result = await tx.post.create({
+          data: { 
+            text: payload.text,
+            authorId: payload.authorId,
+            type: payload.type,
+            visibility: payload.visibility
+          }
+        })
+
+        await tx.outbox.create({
+            data: {
+              topic: "post.created",
+              aggregateType: "POST",
+              aggregateId: result.id,
+              eventType: "post.created",
+              status: "pending",
+              payload: {
+                postId: result.id,
+                authorId: result.authorId,
+                timeline: `${Date.now()}`,
+                createdAt: new Date().toISOString()
+              }
+            }
+        })
+
+          return result;
+       })
 
       if (post) {
           // Emit kafka event
       }
+
+
 
       return post;
 

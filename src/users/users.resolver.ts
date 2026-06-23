@@ -25,7 +25,7 @@ export class UserResolver {
 
   @Query(() => [User])
   async followers(@Args('id') id: number): Promise<User[]> {
-      const followers = await this.userService.getFollowers(id)
+      const followers = await this.userService.getFollowersById(id)
       if (!followers) {
           throw new NotFoundException(id)
       }

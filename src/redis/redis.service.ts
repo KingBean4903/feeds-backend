@@ -33,6 +33,11 @@ export class RedisService {
       }
   }
 
+  async zAdd(key: string, postId: string, score:number) {
+
+      await this.client.zadd(key, score, postId);
+  }
+
   async zRevRangeWithScores(key: string, 
                             limit: number, 
                             after?: string): Promise<ZSETRes[]>{

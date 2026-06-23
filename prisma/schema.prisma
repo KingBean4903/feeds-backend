@@ -13,6 +13,14 @@ datasource db {
   provider = "postgresql"
 }
 
+enum OutboxStatus {
+  pending
+  published
+  failed
+  processing
+  completed
+}
+
 enum PostType {
   TEXT
   IMAGE
@@ -79,19 +87,16 @@ model PostStats {
 
 }
 
+
+
 model PostMedia {
     postId String
     mediaId String
 
     order Int
 
-    post Post @relation(fields: [postId], 
-          references: [id], 
-          onDelete: Cascade)
-    media Media @relation(
-              fields: [mediaId], 
-              references: [id], 
-              onDelete: Cascade)
+    post Post @relation(fields: [postId],references: [id],onDelete: Cascade)
+    media Media @relation(fields:[mediaId],references:[id],onDelete: Cascade)
 
     @@id([postId, mediaId])
 
@@ -161,4 +166,28 @@ model Follow {
   @@index([followerId])
   @@index([followingId])
 
+}
+
+model Outbox {
+  id String @id @default(uuid())
+
+  aggregateId String
+  aggregateType String
+  topic String
+
+  eventType String
+
+  payload Jsonk
+
+  nextRetryAt DateTime?
+  status OutboxStatus
+
+  retryCount Int @default(0)
+
+  createdAt DateTime @default(now())
+  publishedAt DateTime?
+  
+
+  @@index([status, createdAt])
+  @@map("outbox")
 }
