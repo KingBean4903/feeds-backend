@@ -17,7 +17,7 @@ import { PrismaModule } from '../prisma/prisma.module';
       RedisService
     ],
     exports: [
-  FeedsService,
+      FeedsService,
       TimelineRepository,
       PostResolver,
       PostsService, 

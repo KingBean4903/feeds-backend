@@ -64,3 +64,8 @@ export type Media = Prisma.MediaModel
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model Follow
+ * 
+ */
+export type Follow = Prisma.FollowModel

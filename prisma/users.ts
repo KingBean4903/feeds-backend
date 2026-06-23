@@ -675,3 +675,66 @@ export const stats = [
     viewsCount: 5236,
   },
 ];
+
+
+export const followers = [
+    
+  {
+      followerId: '26ecf88c-d7a8-42d0-9e53-e6ffaf162608',
+      followingId: 'eb70f2e2-d32f-4b35-babe-7d5cde1139f2'
+  },
+  {
+      followerId: 'db3f92a6-c0ea-4bc7-8339-ce71ad4e59c1',
+      followingId: 'eb70f2e2-d32f-4b35-babe-7d5cde1139f2'
+  }, 
+  {
+      followerId: '861ef903-cf49-426d-8d86-d35f98c255b4',
+      followingId: 'eb70f2e2-d32f-4b35-babe-7d5cde1139f2'
+  }, 
+  {
+      followerId: '2432d2be-3371-4e4e-9e49-02fee7fdb37c',
+      followingId: 'eb70f2e2-d32f-4b35-babe-7d5cde1139f2'
+  },
+
+
+   {
+      followerId: 'db3f92a6-c0ea-4bc7-8339-ce71ad4e59c1',
+      followingId: '26ecf88c-d7a8-42d0-9e53-e6ffaf162608'
+  },
+
+ {
+      followerId: '861ef903-cf49-426d-8d86-d35f98c255b4',
+      followingId: '26ecf88c-d7a8-42d0-9e53-e6ffaf162608'
+  },
+
+
+
+ {
+      followerId: 'eb70f2e2-d32f-4b35-babe-7d5cde1139f2',
+      followingId: 'db3f92a6-c0ea-4bc7-8339-ce71ad4e59c1'
+  },
+ {
+      followerId: '2432d2be-3371-4e4e-9e49-02fee7fdb37c',
+      followingId: 'db3f92a6-c0ea-4bc7-8339-ce71ad4e59c1'
+  },
+
+ {
+      followerId: '26ecf88c-d7a8-42d0-9e53-e6ffaf162608',
+      followingId: '861ef903-cf49-426d-8d86-d35f98c255b4'
+  },
+ {
+      followerId: '2432d2be-3371-4e4e-9e49-02fee7fdb37c',
+      followingId: '861ef903-cf49-426d-8d86-d35f98c255b4'
+  },
+
+  {
+      followerId: '2432d2be-3371-4e4e-9e49-02fee7fdb37c',
+      followingId: '861ef903-cf49-426d-8d86-d35f98c255b4'
+  },
+ {
+      followerId: '861ef903-cf49-426d-8d86-d35f98c255b4',
+      followingId: '2432d2be-3371-4e4e-9e49-02fee7fdb37c'
+  },
+
+
+]

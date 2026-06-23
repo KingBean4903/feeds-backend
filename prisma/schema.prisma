@@ -85,8 +85,13 @@ model PostMedia {
 
     order Int
 
-    post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-    media Media @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+    post Post @relation(fields: [postId], 
+          references: [id], 
+          onDelete: Cascade)
+    media Media @relation(
+              fields: [mediaId], 
+              references: [id], 
+              onDelete: Cascade)
 
     @@id([postId, mediaId])
 
@@ -140,4 +145,20 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Follow {
+  
+  id String @id @default(uuid())
+
+  followerId String
+  followingId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followingId])
+
+  @@index([followerId])
+  @@index([followingId])
+
 }

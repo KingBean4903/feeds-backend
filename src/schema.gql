@@ -111,8 +111,16 @@ type Query {
 }
 
 type Mutation {
+  createPost(postPayload: PostPayload!): Post!
   followUser(userId: FollowUserInput!): User!
   unfollow(userId: FollowUserInput!): User!
+}
+
+input PostPayload {
+  text: String
+  visibility: String
+  authorId: String
+  type: String
 }
 
 input FollowUserInput {

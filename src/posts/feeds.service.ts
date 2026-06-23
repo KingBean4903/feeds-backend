@@ -4,11 +4,12 @@ import { PostsService } from './posts.service'
 import { FeedConnection, Post} from '../models/post.model'
 
 import { PrismaClient } from '../generated/prisma/client'
-
+import { PrismaService } from '../prisma/prisma.service'
 @Injectable()
 export class FeedsService {
 
   constructor(   
+          private readonly prisma: PrismaService,
           private readonly timelineRepo:TimelineRepository,
           private readonly postService: PostsService,
   ) {

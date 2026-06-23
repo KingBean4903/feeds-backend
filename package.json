@@ -35,6 +35,7 @@
     "graphql": "^17.0.1",
     "graphql-scalars": "^1.25.0",
     "ioredis": "^5.11.1",
+    "kafkajs": "^2.2.4",
     "pg": "^8.21.0",
     "prisma": "^7.8.0",
     "reflect-metadata": "^0.2.2",
