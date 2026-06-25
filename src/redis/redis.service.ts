@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import Redis, { Redis as RedisType } from 'ioredis';
+import Redis, { Redis as RedisType, Pipeline } from 'ioredis';
 
 type ZSETRes = {
   value: string;
@@ -9,7 +9,6 @@ type ZSETRes = {
 export class RedisService {
   
   private client: RedisType;
-  private pipeline: unknown;
 
   constructor() {
       this.client = new Redis({
@@ -19,7 +18,6 @@ export class RedisService {
         username: process.env.REDIS_USER as string
       })
 
-      this.pipeline = this.client.pipeline()
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -41,7 +39,33 @@ export class RedisService {
       await this.client.zadd(key, score, postId);
   }
 
-  async pipelineFn() {
+  async pipelineZSET(ids: string[], postId: string, score: number) {
+
+    const batchSize = 2;
+
+
+      console.log(`IDS size  ${ids.length}`)
+
+    for (let i = 0; i < ids.length; i += batchSize) {
+          const batch = ids.slice(i,  i + batchSize);
+          await this.processBatch(batch, postId, score)
+    }
+  }
+
+  async processBatch(batch: string[], postId: string, score: number) {
+      const pipeline = this.client.pipeline();
+
+
+      console.log(`Batch size  ${batch.length}`)
+      for (let i = 0; i < batch.length; i++) {
+            pipeline.zadd(`timeline:user:${batch[i]}`, score, postId)
+
+            // Remove older entries
+            // pipeline.zremrangebyrank(`timeline:user:${batch[i]}`, 0, -1001)
+      }
+
+      await pipeline.exec()
+
 
   }
 

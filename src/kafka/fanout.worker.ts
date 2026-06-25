@@ -119,17 +119,19 @@ export class EventsConsumerHost implements OnModuleInit {
             
             // Fetch followers
             const followers = await 
-                      this.usersService.getFollowers(authorId);
+                      this.usersService.getFollowers(authorId) ?? [];
 
             let score = Number(timeline);
 
-            const rqsts = followers.map((id) => this.redis.zAdd(
+            /* const rqsts = followers.map((id) => this.redis.zAdd(
                   `timeline:user:${id}`,
                   postId, score
             ))
             
-            await Promise.all(rqsts);
-        
+            await Promise.all(rqsts); */
+
+            this.redis.pipelineZSET(followers, postId, score);
+            
 
           } catch(err) {
 

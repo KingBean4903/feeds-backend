@@ -83,7 +83,7 @@ export class UserService {
       return this.users.find((one) => one.id === id)
   }
 
-  async getFollowers(id: string ): Promise<(string | undefined)[]> {
+  async getFollowers(id: string ): Promise<string[]> {
 
     console.log(`Fetching followrs: ${id}`)
       

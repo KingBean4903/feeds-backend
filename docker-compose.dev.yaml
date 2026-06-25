@@ -67,21 +67,18 @@ services:
     volumes:
       - kafka_data_zk:/var/lib/kafka/zk/data
 
-#  sql-runner:
-#    image: postgres:17-bookworm
-#    depends_on:
-#      - postgres
-#    volumes:
-#      - ./sql:/sql
-#    command: >
-#      sh -c "
-#      set -e &&
-#      sleep 10 &&
-#      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/init/001-system-accounts.sql && 
-#      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/init/003-users.sql &&
-#      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/init/002-wallets.sql &&
-#      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/init/004-constraints.sql 
-#     "
+  sql-runner:
+    image: postgres:17-bookworm
+    depends_on:
+      - postgres
+    volumes:
+      - ./sql:/sql
+      - ./data:/data
+    command: >
+      sh -c "
+      set -e &&
+      sleep 10 &&
+      PGPASSWORD=prisma psql -h postgres -U postgres -d postgres -f /sql/002-rtnshp.sql"
 
 volumes:
   postgres_data:
