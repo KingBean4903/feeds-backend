@@ -25,7 +25,9 @@ export class KafkaConsumer {
           brokers: options.brokers 
       })
       this.consumer = kafka.consumer({
-        groupId: 'events-consumer-group'
+        groupId: 'events-consumer-group',
+        sessionTimeout: 60000,
+        rebalanceTimeout: 90000
       });
   } 
 

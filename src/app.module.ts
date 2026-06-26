@@ -18,6 +18,8 @@ import { PostsModule } from './posts/posts.module';
 import { ConfigModule } from '@nestjs/config'
 import { KafkaModule } from './kafka/kafka.module'
 
+import { FollowModule } from './follow/follow.module';
+
 @Module({
   imports: [
         ConfigModule.forRoot({
@@ -36,19 +38,7 @@ import { KafkaModule } from './kafka/kafka.module'
         }),
         RedisModule,
         UserModule,
-        KafkaModule,
-        KafkaModule.register({
-        topic: 'post.created',
-        clientId: 'post.processor',
-        brokers:  ['localhost:9092'],
-        retry: {
-            retries: 3,
-            factor: 2,
-            initialRetryTime: 500,
-            maxRetryTime: 30000,
-            multiplier: 2
-        }
-    }),
+        FollowModule,
         PostsModule,
 
   ],

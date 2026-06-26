@@ -1,10 +1,11 @@
 import { Inject } from '@nestjs/common';
-import { Kafka } from 'kafkajs';
+import { Kafka, CompressionTypes } from 'kafkajs';
 import type { Producer,
   Message, ProducerBatch,
   TopicMessages } from 'kafkajs';
 import { KAFKA_OPTIONS } from './constants';
 import type { KafkaOptions } from './interfaces/kafka.options.interface';
+import type { KafkaProducerInterface } from './interfaces/kafka.producer.interface';
 import { Injectable } from '@nestjs/common';
 
 type batchId = { id: string, aggregateId: string }
@@ -64,10 +65,19 @@ export class KafkaProducerService {
             }
 
         }]
-    })
+    , })
   }
 
-
+  public async sendBatched(msgs: Record<"followerId" | "followingId", string>[]) {
+    await this.producer.send({
+        topic: this.topic,
+        compression: CompressionTypes.GZIP,
+        messages: msgs.map((one) => 
+                           ({ 
+                             value: JSON.stringify(one) }))
+      
+    , timeout: 50000})
+  }
   public async sendDLQ(payload: DLQMessage) {
 
     const {
@@ -98,23 +108,18 @@ export class KafkaProducerService {
   }
 
 
-  public async sendBatch<T extends batchId[]>(messages: T) {
+  public async sendBatch<T>(messages: T[]) {
 
-    const kafkaMessages: Array<Message> = messages.map((msg) => {
-
+    const kafkaMessages: Array<Message> = messages.map((msg: T) => {
 
         return {
-            key: msg.aggregateId,
             value: JSON.stringify(msg),
-            headers: {
-                idempotencyKey: Buffer.from(msg.aggregateId)
-            }
         }
    });
 
     const topicMsgs: TopicMessages = {
         topic: this.topic,
-        messages: kafkaMessages
+        messages: kafkaMessages,
     }
 
     const batch: ProducerBatch = {
@@ -122,7 +127,9 @@ export class KafkaProducerService {
         acks: -1
     }
     
-    await this.producer.sendBatch(batch)
+    await this.producer.sendBatch(
+      batch,
+    )
    }
 
   public async disconnect() {

@@ -1,9 +1,11 @@
 import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
-export class FollowUserInput { 
+export class FollowInput { 
 
-    @Field()
-    userId: number;
+    @Field({ nullable: true })
+    followingId: string;
 
+    @Field({ nullable : true })
+    followerId: string;
 }

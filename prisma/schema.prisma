@@ -177,7 +177,7 @@ model Outbox {
 
   eventType String
 
-  payload Jsonk
+  payload Json
 
   nextRetryAt DateTime?
   status OutboxStatus

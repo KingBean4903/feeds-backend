@@ -3,7 +3,7 @@ import { Args, Query, Resolver, Parent,Mutation ,
   ResolveField } from '@nestjs/graphql';
 import { User } from '../models/user.model';
 import { UserService } from './users.service';
-import { FollowUserInput } from '../dtos/follow.user.input'
+import { FollowInput } from '../dtos/follow.user.input'
 
 
 @Resolver(of => User)
@@ -38,20 +38,15 @@ export class UserResolver {
       return await this.userService.getFollowing(id)
   } 
 
-  @Mutation(() => User)
-  async followUser(@Args('userId') userId: FollowUserInput): Promise<User> {
+  /* @Mutation()
+  async followUser(@Args('followInput') followInput: [FollowInput]) {
       
-      const user = await this.userService.followUser(userId);
+      const user = await this.userService.followUser(followInput);
 
-      if (!user) {
-          throw new Error(`User undefined`)
-      }
+  } */
 
-      return user;
-  }
-
-  @Mutation(() => User)
-  async unfollow(@Args('userId') userId: FollowUserInput): Promise<User> {
+  /* @Mutation(() => User)
+  async unfollow(@Args('userId') userId: FollowInput): Promise<User> {
       
       const user = await this.userService.unFollowUser(userId);
 
@@ -60,7 +55,7 @@ export class UserResolver {
       }
 
       return user;
-  }
+  } */
 
 
 }

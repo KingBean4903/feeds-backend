@@ -5,7 +5,7 @@ import { PostsService } from './posts.service'
 import { TimelineRepository } from './timeline.repository'
 import { RedisService } from '../redis/redis.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { PrismaModule } from '../prisma/prisma.module';
+
 
 @Module({
     providers: [
@@ -21,9 +21,7 @@ import { PrismaModule } from '../prisma/prisma.module';
       TimelineRepository,
       PostResolver,
       PostsService, 
-      
       RedisService
-
     ]
 })
 export class PostsModule {}

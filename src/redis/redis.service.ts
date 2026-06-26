@@ -1,14 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import Redis, { Redis as RedisType, Pipeline } from 'ioredis';
+import  path  from 'path';
+import fs from 'fs';
 
 type ZSETRes = {
   value: string;
   score: number;
 }
+
+interface Follow {
+  followerId: string;
+  followingId: string;
+}
+const FOLLOWERS_LUA_SCRIPT = 'relationships.lua';
+
 @Injectable()
-export class RedisService {
+export class RedisService implements OnModuleInit {
   
   private client: RedisType;
+  private _luaShaScript: Buffer | string;
+
+  onModuleInit(){
+    this.loadScript(FOLLOWERS_LUA_SCRIPT);
+
+  }
 
   constructor() {
       this.client = new Redis({
@@ -43,8 +58,7 @@ export class RedisService {
 
     const batchSize = 2;
 
-
-      console.log(`IDS size  ${ids.length}`)
+    console.log(`IDS size  ${ids.length}`)
 
     for (let i = 0; i < ids.length; i += batchSize) {
           const batch = ids.slice(i,  i + batchSize);
@@ -102,6 +116,47 @@ export class RedisService {
 
   async del(key: string) {
       await this.client.del(key);
+  }
+
+  async loadScript(LUA_SCRIPT: string) {
+
+    const luaPath = path.resolve(`src/follow/polling/${LUA_SCRIPT}`);
+    const lPath  = fs.readFileSync(luaPath, 'utf-8');
+    this._luaShaScript = await this.client.script("LOAD", lPath) as string;
+
+  }
+
+  async evalShaRedis(LUA_SCRIPT: string, args: string[]) { 
+
+    try {
+
+      const res = await this.client.evalsha(
+        this._luaShaScript, 
+        args.length, 
+        args
+      );
+    } catch(err) {
+        let message;
+        if (err instanceof Error) message = err.message;
+        else message = String(err)
+
+        if (err.message.includes('NOSCRIPT')) {
+
+           const luaPath = path.resolve(`src/follow/polling/${LUA_SCRIPT}`);
+              const lpath = fs.readFileSync(luaPath, 'utf-8');
+
+              this._luaShaScript = await this.client.script("LOAD", lpath) as string;
+
+              const res = await this.client.evalsha(
+                this._luaShaScript, 
+                args.length, args 
+              );
+        } else {
+              throw err;
+        }
+    }
+
+
   }
 
 }

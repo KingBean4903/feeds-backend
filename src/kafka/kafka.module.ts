@@ -24,7 +24,6 @@ export interface KafkaInitOptions {
   retry: KafkaRetry
 }
 
-@Global()
 @Module({
 })
 export class KafkaModule {
@@ -43,7 +42,10 @@ export class KafkaModule {
             KafkaConsumer,
             UserService, RedisService
                      ],
-          exports: [KafkaProducerService, KafkaPollingWorker]
+          exports: [
+            KafkaProducerService, 
+            KafkaPollingWorker
+          ]
       }
   }
 }
