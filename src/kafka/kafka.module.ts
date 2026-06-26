@@ -21,7 +21,8 @@ export interface KafkaInitOptions {
   topic: string;
   brokers: string[];
   clientId: string;
-  retry: KafkaRetry
+  retry: KafkaRetry,
+  consumer_group: string;
 }
 
 @Module({
@@ -37,14 +38,12 @@ export class KafkaModule {
               useValue: options,
             },
             KafkaProducerService,
-            EventsConsumerHost,
-            KafkaPollingWorker,
             KafkaConsumer,
             UserService, RedisService
                      ],
           exports: [
             KafkaProducerService, 
-            KafkaPollingWorker
+            KafkaConsumer,
           ]
       }
   }

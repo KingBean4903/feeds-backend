@@ -3,6 +3,15 @@ import { KafkaProducerService } from '../../kafka/kafka.producer.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OutboxStatus } from '../../generated/prisma/client'
 
+
+
+interface Payload  {
+  id: string;
+  payload: any;
+  eventType: string;
+  aggregateId: string;
+}
+
 @Injectable()
 export class KafkaPollingWorker implements OnModuleInit { 
 
@@ -36,11 +45,15 @@ export class KafkaPollingWorker implements OnModuleInit {
         const result = await this.prisma.$transaction(async (tx) => {
             
             const events = await tx.outbox.findMany({
-                where: { status: 'pending' },
+                where: { 
+                  status: 'pending'
+                },
                 take: 10,
                 select: { 
                   id: true, 
-                  aggregateId: true
+                  aggregateId: true,
+                  eventType: true,
+                  payload: true,
                 },
                 orderBy: { createdAt: 'asc' }
             })
@@ -62,18 +75,22 @@ export class KafkaPollingWorker implements OnModuleInit {
         
   }
 
-  async publishEvents(messages: Record<"id" | "aggregateId", string>[]) {
+  async publishEvents(messages: Payload[]) {
+
+          
             try {
-                const events = messages.map(one => {
-                                            
-                            return { 
-                              ...one,
-                              "eventType" : "FollowersOutboxEvent",
-                              "source"  : "database"
-                               }
-                })
-                await this.kafka.sendBatch(events);
-                await this.markEventsAsPublished(events);
+                const events = messages
+                .filter((one: Payload) => one.eventType === "FollowCreated")
+                const fMsgs = events.map(one => ({        
+                        ...one,
+                        eventType : "FollowOutboxEvent",
+                        "source"  : "database"
+                }))
+
+                console.log(`pollingEvents(): ${JSON.stringify(fMsgs)}`)
+
+                await this.kafka.sendBatch(fMsgs);
+                await this.markEventsAsPublished(fMsgs);
             } catch(error) {
                  let message;
                  if (error instanceof Error) message = error.message

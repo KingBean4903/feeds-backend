@@ -44,33 +44,12 @@ export class EventsConsumerHost implements OnModuleInit {
     private readonly redis: RedisService,
     private readonly usersService: UserService,
   ) {
-      this.producer = new KafkaProducerService({
-        clientId: process.env.KAFKA_DLQ_CLIENT_ID as string,
-        brokers: [process.env.KAFKA_BROKERS as string],
-        topic: process.env.DLQ_TOPIC as string,
-        retries: 3,
-        factor: 2,
-        initialRetryTime: 500,
-        maxRetryTime: 30000,
-        multiplier: 2
-      });
-
-      
+           
   }
 
     async onModuleInit() {
 
-        this.kafka = new KafkaConsumer({
-              topic: 'post.created',
-              clientId: 'events-processor',
-              brokers: ['localhost:9092'],
-              retries: 3,
-              factor: 2,
-              initialRetryTime: 500,
-              maxRetryTime: 30000,
-              multiplier: 2
-        });
-
+       
         await this.run();
     }
 

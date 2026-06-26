@@ -11,6 +11,7 @@ interface ConsumerOptions {
   brokers: string[];
   groupId: string;
   topic: string;
+  consumer_group: string;
 }
 
 @Injectable()
@@ -25,7 +26,7 @@ export class KafkaConsumer {
           brokers: options.brokers 
       })
       this.consumer = kafka.consumer({
-        groupId: 'events-consumer-group',
+        groupId: options.consumer_group,
         sessionTimeout: 60000,
         rebalanceTimeout: 90000
       });

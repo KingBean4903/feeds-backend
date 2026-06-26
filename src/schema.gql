@@ -103,11 +103,9 @@ type FeedConnection {
   pageInfo: PageInfo!
 }
 
-type Follow {
-  id: ID!
-  followerId: String!
-  followingId: String!
-  createdAt: DateTime!
+type FollowInputResult {
+  followingId: String
+  followerId: String
 }
 
 type Query {
@@ -119,7 +117,7 @@ type Query {
 
 type Mutation {
   createPost(postPayload: PostPayload!): Post!
-  followUser(followInput: FollowInput!): Follow!
+  followUser(followInput: FollowInput!): FollowInputResult!
 }
 
 input PostPayload {

@@ -42,52 +42,40 @@ export class RelationshipsConsumer implements OnModuleInit {
     }
 
   async run() {
+
+    console.log('rltnshipsConsumer()')
     await this.kafka.connect();
     await this.kafka.subscribe(); 
     this.kafka.consumer.run({
-        eachBatch: async({ batch, resolveOffset, heartbeat }) => {
+        eachMessage: async(messagePayload: EachMessagePayload) => {
+                    
+                const { topic, message, partition } = messagePayload;
 
-            const rMessages: Outbox[] = []
-            
-            for (const message of batch.messages) { 
-
-                 const data = message.value ?? null;
+                const data = message.value ?? null;
               
                  if (data) {
 
                       const result: Outbox = 
                         JSON.parse(data.toString());
 
-                      if (result.eventType === "FollowersOutboxEvent") { 
-                          
-                          rMessages.push(result);
+                      console.log(`rltsnpConsumer() ${JSON.stringify(result)}`)
 
-                          if (rMessages.length  >= FOLLOWER_BATCH_SIZE) {
-                            await this.redis.processMessages(rMessages)
-                             rMessages.length = 0;
-                          }
-
+                      console.log('rltnshipsConsumer()')
+                      if (result.eventType === "FollowOutboxEvent") { 
+                            await this.sendToRedis(result)
                       }
                   }
           }
-
-
-        }
     });
 
   }
 
 
-  async sendToRedis(result: Record<string, string>, topic: string,
-                             kmessage:Message) {
+  async sendToRedis(result:Outbox) {
 
           try {
             
-
-        
-
-
-          
+              // this.redis.processFollow(result);
 
           } catch(err) {
             let message;

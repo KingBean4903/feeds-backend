@@ -54,18 +54,15 @@ export class KafkaProducerService {
     }
   }
 
-  public async send(key: string, value: Record<string, string>) {
+  public async send(value: Record<string, string>) {
+
     await this.producer.send({
         topic: this.topic,
         messages: [{
-            key: key, 
             value: JSON.stringify(value),
-            headers: {
-                idempotencyKey: Buffer.from(value.idempotencyKey)
-            }
+        }], 
+    })
 
-        }]
-    , })
   }
 
   public async sendBatched(msgs: Record<"followerId" | "followingId", string>[]) {

@@ -19,6 +19,7 @@ import { ConfigModule } from '@nestjs/config'
 import { KafkaModule } from './kafka/kafka.module'
 
 import { FollowModule } from './follow/follow.module';
+import { PollingModule } from './follow/polling/polling.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { FollowModule } from './follow/follow.module';
         RedisModule,
         UserModule,
         FollowModule,
+        PollingModule,
         PostsModule,
 
   ],

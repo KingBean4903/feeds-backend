@@ -14,9 +14,37 @@ export class FollowersRepo {
   constructor(private prisma: PrismaService) {}
 
   async followUser(follow: Follow) {
-          return await this.prisma.follow.create({
-            data: follow
-          })
+
+            console.log(`followersRepo() ${JSON.stringify(follow)}`)
+            try {
+          await this.prisma.$transaction(async (tx) => {
+            const result = await tx.follow.create({
+              data: {
+                  followerId: follow.followerId, 
+                  followingId: follow.followingId
+              }
+            });
+
+            await tx.outbox.create({
+              data: {
+                  topic: 'follow.created',
+                  aggregateType: 'Follow',
+                  aggregateId: `${result.id}`,
+                  payload: result,
+                  eventType: 'FollowCreated',
+                  status: OutboxStatus.pending,
+              }
+            })
+
+          }) 
+            } catch (error) {
+        let message;
+        if (error instanceof Error) message = error.message;
+        else message = String(error)
+
+        console.log(`Error followUser():  ${error}`)
+
+            }
   }
 
   async createFollow(follows: Pick<Follow, "followerId" | "followingId">[]) {

@@ -4,15 +4,18 @@ import { FollowService } from './follow.service'
 import { KafkaProducerService } from '../kafka/kafka.producer.service';
 import { FollowResolver } from './follow.resolver'
 import { FollowersRepo } from './followers.repository'
-import { KafkaPollingWorker  } from './polling/followers.polling.worker'
 import { PrismaService } from '../prisma/prisma.service'
+import { FollowConsumerHost  } from './follow.consumer'
+import { KafkaConsumer } from '../kafka/kafka.consumer'
+import { RedisWorker } from './polling/redis.worker';
 
 @Module({
     imports: [
          KafkaModule.register({
-            topic: 'follow.created.batch',
-            clientId: 'follow.batch.processor',
+            topic: 'follow.created',
+            clientId: 'follow.processor.v1',
             brokers:  ['localhost:9092'],
+            consumer_group: 'follow-consumer-group',
             retry: {
                 retries: 3,
                 factor: 2,
@@ -23,12 +26,16 @@ import { PrismaService } from '../prisma/prisma.service'
       }),
     ],
     providers: [
-      KafkaPollingWorker,
       PrismaService,
       FollowersRepo,
+      FollowConsumerHost,
       FollowService,
+      RedisWorker,
       FollowResolver,
     ],
-    exports: [FollowService, ]
+    exports: [
+      FollowService,
+      FollowConsumerHost
+    ]
 })
 export class FollowModule {}

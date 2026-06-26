@@ -3,9 +3,8 @@ import { RedisService } from '../../redis/redis.service';
 
 export interface Payload {
   followerId: string;
-  followingId: string;
+  followingId: string;  
 }
-
 
 export interface Outbox {
   aggregateId: String
@@ -21,16 +20,27 @@ export interface Follow {
   followerId: string;
   followingId: string;
 }
+// test_user_78498
+const CELEBRITY_THRESHOLD: string = "50000";
 
 @Injectable()
 export class RedisWorker {
 
   constructor(private readonly redis: RedisService) {}
 
-  async processMessages(msgs: Outbox[]) {
+  async processFollow(msg: Payload) {
 
-  const args = msgs.map((msg: Outbox) => 
-    `${msg.payload?.followerId || '' }|${msg.payload?.followingId ?? ''}`);
+    console.log(`Redis payload processFollow(): ${JSON.stringify(msg)}`)
+
+    const followerId = `${msg.followerId}`  
+    const followingId = `${msg.followingId}`
+
+    const args: string[] = [ 
+      followerId, 
+      followingId, 
+      CELEBRITY_THRESHOLD ];
+
+      console.log(`processFollow(): redis lua call`)
 
       try {
         
@@ -43,7 +53,7 @@ export class RedisWorker {
           if (err instanceof Error) message = err.message;
           else message = String(err)
           
-          console.log(`processRedis: ${message}`)
+          console.log(`processFollow(): ${message}`)
       }
   }
 

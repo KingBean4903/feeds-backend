@@ -3,6 +3,14 @@ import { KafkaProducerService } from './kafka.producer.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { OutboxStatus } from '../generated/prisma/client'
 
+interface Outbox { 
+    id: string;
+    aggregateType: string;
+    aggregateId: string;
+    eventType: string;
+    status: string;
+    payload: any;
+}
 
 @Injectable()
 export class KafkaPollingWorker implements OnModuleInit { 
@@ -21,7 +29,7 @@ export class KafkaPollingWorker implements OnModuleInit {
     console.log('Fetching outbox');
     while(true) {
       try {
-        await this.doWork();
+        // await this.doWork();
       } catch(err) {
           console.error(`FetchOutbox ${err}`);
       }
@@ -39,6 +47,14 @@ export class KafkaPollingWorker implements OnModuleInit {
             const events = await tx.outbox.findMany({
                 where: { status: 'pending' },
                 take: 10,
+                select: {
+                  id: true,
+                  status: true,
+                  eventType: true,
+                  aggregateId: true,
+                  aggregateType: true,
+                  payload: true
+                },
                 orderBy: { createdAt: 'asc' }
             })
 
@@ -59,19 +75,20 @@ export class KafkaPollingWorker implements OnModuleInit {
         
   }
 
-  async publishEvents(messages: Record<"id" | "aggregateId", string>[]) {
+  async publishEvents(messages: Outbox[]) {
 
             try {
 
-                const events = messages.map(one => {
+                const events = messages
+                .filter((one: Outbox) => one.eventType == 'post.created')
+                .map(one => ({
                                             
-                      return { 
                         ...one,
                         "eventType" : "PostCreated",
                         "source"  : "database"
-                    }
+                }
 
-                })
+                ))
                 await this.kafka.sendBatch(events);
                 await this.markEventsAsPublished(events);
             } catch(error) {
@@ -83,11 +100,11 @@ export class KafkaPollingWorker implements OnModuleInit {
 
   }
 
-  async markEventsAsPublished<T extends {id: string}[]>(events: T) {
+  async markEventsAsPublished(events: Outbox[]) {
       
     await this.prisma.$transaction(async (tx) => {
         
-        const ids = events.map(record => record.id);
+        const ids = events.map((record: Outbox) => record.id);
         // console.log(`markEventsAsPublished ${JSON.stringify(ids)}`)
 
         const results = await tx.outbox.updateMany({

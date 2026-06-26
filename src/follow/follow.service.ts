@@ -14,7 +14,23 @@ export class FollowService implements OnModuleInit {
     private producer: KafkaProducerService) {}
 
   async followUser(follow: FollowInput) {
-        return await this.repository.followUser(follow)
+
+    console.log(`followUser(): producer`)
+
+    try {
+        
+        // console.log(`${this.producer.topic}`);
+
+        await this.producer.send(
+          {
+            ...follow, 
+            eventType: 'FollowCreated'
+          });
+
+    } catch(err) {
+       console.log('producerError()')
+    } 
+
   }
 
   async followBatch(relationships: FollowInput[]) {

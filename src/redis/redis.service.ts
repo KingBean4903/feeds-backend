@@ -70,7 +70,7 @@ export class RedisService implements OnModuleInit {
       const pipeline = this.client.pipeline();
 
 
-      console.log(`Batch size  ${batch.length}`)
+console.log(`Batch size  ${batch.length}`)
       for (let i = 0; i < batch.length; i++) {
             pipeline.zadd(`timeline:user:${batch[i]}`, score, postId)
 
@@ -122,7 +122,20 @@ export class RedisService implements OnModuleInit {
 
     const luaPath = path.resolve(`src/follow/polling/${LUA_SCRIPT}`);
     const lPath  = fs.readFileSync(luaPath, 'utf-8');
-    this._luaShaScript = await this.client.script("LOAD", lPath) as string;
+    
+    try {
+          this._luaShaScript = (await this.client.script("LOAD", lPath)) as string;
+          console.log(`Loaded Lua script ${this._luaShaScript}`)
+    } catch(err) {
+      let message: string;
+      
+      if (err instanceof Error) {
+            message= err.message;
+      } else {
+            message = String(err);
+      }
+
+    }
 
   }
 
@@ -132,9 +145,10 @@ export class RedisService implements OnModuleInit {
 
       const res = await this.client.evalsha(
         this._luaShaScript, 
-        args.length, 
+        0,
         args
       );
+
     } catch(err) {
         let message;
         if (err instanceof Error) message = err.message;
@@ -143,14 +157,30 @@ export class RedisService implements OnModuleInit {
         if (err.message.includes('NOSCRIPT')) {
 
            const luaPath = path.resolve(`src/follow/polling/${LUA_SCRIPT}`);
-              const lpath = fs.readFileSync(luaPath, 'utf-8');
+           const lpath = fs.readFileSync(luaPath, 'utf-8');
 
-              this._luaShaScript = await this.client.script("LOAD", lpath) as string;
+           try {
+
+              this._luaShaScript = 
+                (await this.client.script("LOAD", lpath)) as string;
 
               const res = await this.client.evalsha(
                 this._luaShaScript, 
                 args.length, args 
               );
+
+            } catch(err) {
+ 
+              let message: string;
+              
+              if (err instanceof Error) {
+                    message= err.message;
+              } else {
+                    message = String(err);
+              }
+
+            }
+
         } else {
               throw err;
         }

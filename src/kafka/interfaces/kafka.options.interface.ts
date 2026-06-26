@@ -4,6 +4,7 @@ export interface KafkaOptions {
   brokers: string[];
   retries: number;
   factor:number;
+  consumer_group: string;
   initialRetryTime: number;
   maxRetryTime: number;
   multiplier: number;

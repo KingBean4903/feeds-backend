@@ -14,7 +14,6 @@ import { KafkaConsumer } from '../kafka/kafka.consumer';
 import { FollowersRepo, Follow } from './followers.repository'
 
 import { KafkaProducerService } from '../kafka/kafka.producer.service';
-import { RedisWorker, Outbox } from './polling/redis.worker';
 
 interface Response {
   eventType: string;
@@ -30,9 +29,9 @@ const FOLLOWER_BATCH_SIZE = 100;
 @Injectable()
 export class FollowConsumerHost implements OnModuleInit {
 
+
   constructor(
     private kafka: KafkaConsumer,
-    private redis: RedisWorker,
     private followersRepo: FollowersRepo,
   ) {}
 
@@ -43,7 +42,7 @@ export class FollowConsumerHost implements OnModuleInit {
   async run() {
     console.log(`followerConsumer()`)
     await this.kafka.connect();
-    await this.kafka.subscribe();
+    // await this.kafka.subscribe(); 
     this.kafka.consumer.run({
              eachMessage: async(messagePayload: EachMessagePayload) => {
 
@@ -56,21 +55,12 @@ export class FollowConsumerHost implements OnModuleInit {
                  if (data) {
 
                     const result:
-                      Record<"followerId"
-                          | "followingId" 
-                          | "eventType" | "payload", string | any> = JSON.parse(data.toString());
-                    console.log(`followCreated(): consumer, 
-                                ${JSON.stringify(result)}`)
+                      Record<"followerId"| "followingId" | "eventType", string> = JSON.parse(data.toString());
+                    console.log('followCreated(): consumer')
 
                       if (result.eventType === 'FollowCreated') {
 
-                        await this.saveToPg(result) 
-                      } else if (result.eventType === "FollowOutboxEvent"){
-
-                        const payload = result.payload;
-
-                        await this.redis.processFollow(payload);
-
+                        await this.saveToPg(result)
                       }
                   }    
           }
