@@ -12,17 +12,20 @@ interface Follow {
   followerId: string;
   followingId: string;
 }
+
 const FOLLOWERS_LUA_SCRIPT = 'relationships.lua';
+const FOLLOWERS_BATCH_LUA_SCRIPT = 'batch.lua';
 
 @Injectable()
 export class RedisService implements OnModuleInit {
   
   private client: RedisType;
   private _luaShaScript: Buffer | string;
-
+  private _luaBatchShaScript: Buffer | string;
+  
   onModuleInit(){
-    this.loadScript(FOLLOWERS_LUA_SCRIPT);
-
+    this.loadScript(FOLLOWERS_LUA_SCRIPT, this._luaShaScript);
+    this.loadScript(FOLLOWERS_BATCH_LUA_SCRIPT, this._luaBatchShaScript);
   }
 
   constructor() {
@@ -37,7 +40,7 @@ export class RedisService implements OnModuleInit {
 
   async get<T>(key: string): Promise<T | null> {
       const data = await this.client.get(key);
-      return data ? JSON.parse(data): null;
+      return data ? data as T : null;
   }
 
   async set(key: string, value: unknown, ttlSeconds: number) {
@@ -118,13 +121,13 @@ console.log(`Batch size  ${batch.length}`)
       await this.client.del(key);
   }
 
-  async loadScript(LUA_SCRIPT: string) {
+  async loadScript(LUA_SCRIPT: string, shaScript: string | Buffer) {
 
     const luaPath = path.resolve(`src/follow/polling/${LUA_SCRIPT}`);
     const lPath  = fs.readFileSync(luaPath, 'utf-8');
     
     try {
-          this._luaShaScript = (await this.client.script("LOAD", lPath)) as string;
+          shaScript = (await this.client.script("LOAD", lPath)) as string;
           console.log(`Loaded Lua script ${this._luaShaScript}`)
     } catch(err) {
       let message: string;
@@ -150,6 +153,7 @@ console.log(`Batch size  ${batch.length}`)
       );
 
     } catch(err) {
+
         let message;
         if (err instanceof Error) message = err.message;
         else message = String(err)
@@ -160,13 +164,62 @@ console.log(`Batch size  ${batch.length}`)
            const lpath = fs.readFileSync(luaPath, 'utf-8');
 
            try {
-
               this._luaShaScript = 
                 (await this.client.script("LOAD", lpath)) as string;
 
               const res = await this.client.evalsha(
                 this._luaShaScript, 
-                args.length, args 
+                0,                
+                args 
+              );
+
+            } catch(err) {
+ 
+              let message: string;
+              
+              if (err instanceof Error) {
+                    message= err.message;
+              } else {
+                    message = String(err);
+              }
+
+            }
+
+        } else {
+              throw err;
+        }
+    }
+  }
+
+  async evalBatch(LUA_SCRIPT: string, args: string[]) { 
+
+    try {
+
+      const res = await this.client.evalsha(
+        this._luaBatchShaScript, 
+        0,
+        ...args
+      );
+
+    } catch(err) {
+
+        let message;
+        if (err instanceof Error) message = err.message;
+        else message = String(err)
+
+        if (err.message.includes('NOSCRIPT')) {
+
+           const luaPath = path.resolve(`src/follow/polling/${LUA_SCRIPT}`);
+           const lpath = fs.readFileSync(luaPath, 'utf-8');
+
+           try {
+              this._luaBatchShaScript = 
+                (await this.client.script("LOAD", lpath)) as string;
+
+              const res = await this.client.evalsha(
+                this._luaBatchShaScript, 
+                0,                
+                ...args 
               );
 
             } catch(err) {

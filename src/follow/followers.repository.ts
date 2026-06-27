@@ -47,6 +47,44 @@ export class FollowersRepo {
             }
   }
 
+async followBatch(follows: Record<"followerId" | "followingId", string>[]) {
+
+            console.log(`followBatchRepo() ${JSON.stringify(follows)}`)
+
+            try {
+          await this.prisma.$transaction(async (tx) => {
+
+            const result = await tx.follow.createMany({
+              data:  follows           
+            });
+
+            const events = follows.map((one) => ({ 
+              ...one, 
+               topic: 'follow.created',
+                  aggregateType: 'FollowBatch',
+                  aggregateId: `${one.followingId}`,
+                  payload: result,
+                  eventType: 'FollowBatchCreated',
+                  status: OutboxStatus.pending,
+            }))
+
+            await tx.outbox.createMany({
+              data: events
+            })
+
+          }) 
+            } catch (error) {
+        let message;
+        if (error instanceof Error) message = error.message;
+        else message = String(error)
+
+        console.log(`Error followUser():  ${error}`)
+
+            }
+  }
+
+
+
   async createFollow(follows: Pick<Follow, "followerId" | "followingId">[]) {
      
 

@@ -1,8 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { KafkaProducerService } from '../../kafka/kafka.producer.service';
-import { PrismaService } from '../../prisma/prisma.service';
-import { OutboxStatus } from '../../generated/prisma/client'
 
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { KafkaProducerService } from '../kafka/kafka.producer.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { OutboxStatus } from '../generated/prisma/client'
 
 
 interface Payload  {
@@ -13,7 +13,7 @@ interface Payload  {
 }
 
 @Injectable()
-export class KafkaPollingWorker implements OnModuleInit { 
+export class KafkaBatchPollingWorker implements OnModuleInit { 
 
   async onModuleInit() {
       this.kafka.connect();
@@ -47,7 +47,7 @@ export class KafkaPollingWorker implements OnModuleInit {
             const events = await tx.outbox.findMany({
                 where: { 
                   status: 'pending',
-                  eventType: 'FollowCreated'
+                  eventType: 'FollowBatchCreated'
                 },
                 take: 10,
                 select: { 
@@ -83,11 +83,12 @@ export class KafkaPollingWorker implements OnModuleInit {
              
                 const followMsgs = messages.map(one => ({        
                         ...one,
-                        eventType : "FollowOutboxEvent",
+                        eventType : "FollowBatchOutboxEvent",
                         "source"  : "database"
                 }))
 
-                console.log(`pollingEvents(): ${JSON.stringify(followMsgs)}`)
+                console.log(`pollingBatchEvents(): 
+                            ${JSON.stringify(followMsgs)}`)
 
                 await this.kafka.sendBatch(followMsgs);
                 await this.markEventsAsPublished(followMsgs);

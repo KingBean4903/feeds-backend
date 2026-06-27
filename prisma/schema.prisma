@@ -187,7 +187,6 @@ model Outbox {
   createdAt DateTime @default(now())
   publishedAt DateTime?
   
-
-  @@index([status, createdAt])
+  @@index([status, createdAt, eventType])
   @@map("outbox")
 }

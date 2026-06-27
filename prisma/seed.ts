@@ -6,7 +6,7 @@ import fs from 'fs';
 import csv from 'csv-parser'
 import crypto from 'crypto';
 import { v7 as uuidv7 } from 'uuid';
-
+import path from 'path';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 const pool = new Pool({ connectionString });
@@ -17,17 +17,31 @@ const prisma = new PrismaClient({ adapter });
 // Generate users
 async function generateUsers(count: number) {
 
-    const stream = fs.createWriteStream(
-        './users.csv');
     
-    // stream.write(`id,username,displayName\n`)
-
-    for (let i = 1; i < 100_000; i++) {
+  const lpath = path.resolve('./data/users_followd.csv')
+  const stream = fs.createWriteStream(lpath);
+    
+    for (let i = 1; i < count; i++) {
         stream.write(
-          `user_${i + 1},user${i + 1},User ${i + 1}\n`)
+          `user_${i + 100_000},user${i + 100_000},User ${i + 100_000}\n`)
     }
 
     stream.end();
+}
+
+// CELEB FOLLOWERS
+async function generateCeleb(row: string[]) {
+
+
+  const celebrityId = 'user_2';
+
+  console.log(`${JSON.stringify(row)}`)
+
+  const stream = fs.createWriteStream('celeb_followers.csv');
+    
+  stream.write(`${uuidv7()},${row[0]},${celebrityId}\n`)
+   
+  stream.end();
 }
 
 
@@ -83,18 +97,31 @@ async function generateRelationships<T extends {id: string}>(users: T[]) {
 
 async function main() {
   
-  // await generateUsers(100000);
+  // await generateUsers(2000);
 
-  const users : {id:string, username: string, displayName:string }[] = [];
+  //const users : {id:string, username: string, displayName:string }[] = [];
 
-  fs.createReadStream('./data/users.csv', {encoding: 'utf-8'})
+  //const lpath = path.resolve('data/users_followd.csv')
+  //
+  const stream = fs.createWriteStream('celeb_followers.csv');
+
+
+  fs.createReadStream('users_followd.csv', {encoding: 'utf-8'})
         .pipe(csv({ headers: false }))
-        .on('data', (data) => { 
-              users.push({ id: data[0], 
-                         username: data[1], 
-                         displayName: data[2] })
-        })
-        .on('end', () => generateRelationships(users))
+        .on('data', (row) => {
+            
+               const celebrityId = 'user_2';
+
+                console.log(`${JSON.stringify(row)}`)
+
+                                
+                stream.write(`${uuidv7()},${row[0]},${celebrityId}\n`)
+                 
+        }
+        
+            
+        )
+        .on('end', () => stream.end()) 
 
 }
 

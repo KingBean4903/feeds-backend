@@ -30,10 +30,10 @@ end
 
 local newCount = tier1 + 1
 
-if newCount == celebThreshold then
-    redis.call("SET", "user:tier:" .. ARGV[2], "CELEBRITY")
+if newCount >= celebThreshold then
+    redis.call("SET", "user:tier:" .. ARGV[2], "CELEBRITY", "EX", 86400)
 else 
-  redis.call("SET", "user:tier:" .. ARGV[2], "REGULAR")
+  redis.call("SET", "user:tier:" .. ARGV[2], "REGULAR", "EX", 86400)
 end
 
 redis.call("INCR", followingCountKey)

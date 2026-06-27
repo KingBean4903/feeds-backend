@@ -10,9 +10,7 @@ export interface Outbox {
   aggregateId: String
   aggregateType: String
   topic: string
-
   eventType: string
-
   payload: Payload
 }
 
@@ -22,6 +20,10 @@ export interface Follow {
 }
 // test_user_78498
 const CELEBRITY_THRESHOLD: string = "50000";
+
+const FOLLOWER_BATCH_SIZE = 100;
+
+const BATCH_LUA = 'baatch.lua';
 
 @Injectable()
 export class RedisWorker {
@@ -56,6 +58,52 @@ export class RedisWorker {
           console.log(`processFollow(): ${message}`)
       }
   }
+
+  async processBatchFollows(follows: Record<"payload",  Payload>[]) {
+
+    const batch: string[] = [];
+    
+    for await (const row of follows) {
+
+        const followerId: string = row.payload.followerId;
+        const followingId: string = row.payload.followingId;
+        
+        if (!followerId || !followingId) {
+              continue;
+        }
+
+
+        batch.push(`${followerId.trim()}|${followingId.trim()}`);
+
+        if (batch.length == FOLLOWER_BATCH_SIZE) {
+            await this.processBatch(batch);
+
+            batch.length = 0;
+        } 
+    }
+
+    if (batch.length > 0 ) {
+          await this.processBatch(batch);
+    }
+  }
+
+  // REDIS BATCH PROCESSOR
+  async processBatch(batch: string[]) {
+
+    if (batch.length === 0) {
+          return;
+    }
+
+    try {
+        await this.redis.evalBatch(BATCH_LUA, batch);
+    } catch(err) {
+        console.error(`processBatch(): ${err}`)
+    }
+    
+
+  }
+
+
 
 
 }

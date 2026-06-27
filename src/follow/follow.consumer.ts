@@ -65,14 +65,13 @@ export class FollowConsumerHost implements OnModuleInit {
                       if (result.eventType === 'FollowCreated') {
 
                         await this.saveToPg(result) 
-                      } else if (result.eventType === "FollowOutboxEvent"){
+                      }  else if (result.eventType === "FollowOutboxEvent"){
 
                         const payload = result.payload;
-
                         await this.redis.processFollow(payload);
 
-                      }
-                  }    
+                      }                   
+                 }    
           }
         
     });

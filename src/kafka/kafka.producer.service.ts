@@ -65,6 +65,20 @@ export class KafkaProducerService {
 
   }
 
+  // HANDLES CELEB WRITES
+  public async sendCeleb(key: string, value: Record<string, string>) {
+
+    await this.producer.send({
+        topic: this.topic,
+        compression: CompressionTypes.GZIP,
+        messages: [{
+            key: key,
+            value: JSON.stringify(value),
+        }], 
+    })
+
+  }
+
   public async sendBatched(msgs: Record<"followerId" | "followingId", string>[]) {
     await this.producer.send({
         topic: this.topic,

@@ -68,7 +68,7 @@ export class RelationshipsConsumer implements OnModuleInit {
           }
     });
 
-  }
+  }  
 
 
   async sendToRedis(result:Outbox) {

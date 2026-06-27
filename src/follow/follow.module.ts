@@ -8,6 +8,8 @@ import { PrismaService } from '../prisma/prisma.service'
 import { FollowConsumerHost  } from './follow.consumer'
 import { KafkaConsumer } from '../kafka/kafka.consumer'
 import { RedisWorker } from './polling/redis.worker';
+import { CelebBatchConsumer } from './follow.batch.consumer';
+import { KafkaBatchPollingWorker  } from './follow.batch.polling.worker'
 
 @Module({
     imports: [
@@ -28,9 +30,12 @@ import { RedisWorker } from './polling/redis.worker';
     providers: [
       PrismaService,
       FollowersRepo,
+      CelebBatchConsumer,
       FollowConsumerHost,
       FollowService,
       RedisWorker,
+      FollowConsumerHost,
+      KafkaBatchPollingWorker,
       FollowResolver,
     ],
     exports: [
